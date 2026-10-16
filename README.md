@@ -45,3 +45,41 @@ To run Lesson 1.2:
 ## My Learning Goal
 
 I want to improve my Python skills to build AI agents and automation tools.
+
+
+## Lesson 1.8 — Business Helper Bot
+
+**Business:** City Mart (Demo Local Shop)
+
+### Intent Design Table
+
+| Intent | Keywords | Bot Response |
+|---|---|---|
+| Greeting | hi, hello, hey, salam | Personalized greeting |
+| Opening Hours | hour, open, time | Open daily 9 AM–10 PM |
+| Prices | price, cost, how much | Example product prices |
+| Location | where, location, address | Demo shop based in Lahore |
+| Orders | order, delivery | Ordering and delivery guidance |
+| Complaints | refund, complaint, late, damaged | Apology and manager referral |
+| Human Handover | human, agent | Simulated human handover |
+| Exit | bye, exit | Goodbye and chat summary |
+| Fallback | Unknown question | Generate a future AI prompt |
+
+### Features
+
+- Customer name memory
+- Multiple messages using `while True`
+- Case-insensitive intent detection
+- Complaint-first routing
+- Human handover (stretch goal)
+- Complaint counter (stretch goal)
+- AI fallback prompt for Module 2
+- Final conversation summary
+
+### Run
+
+```powershell
+uv run .\code\lesson_08_mini_chatbot.py
+```
+
+**Note:** Shop prices, opening hours, and location are fictional examples.
