@@ -83,3 +83,62 @@ uv run .\code\lesson_08_mini_chatbot.py
 ```
 
 **Note:** Shop prices, opening hours, and location are fictional examples.
+
+## Module 2 Final Project — AI Business Assistant
+
+### Project Overview
+
+**Zentrox Lab AI Business Assistant** is a Python and LangChain-based AI agent that helps a software development business answer customer questions, check orders, process WhatsApp order messages, and maintain business records.
+
+The assistant reads business information from `business.json` and requires owner approval before saving orders.
+
+### Features
+
+- Answers customer questions using official business information.
+- Looks up service prices without inventing amounts.
+- Checks existing orders.
+- Places new orders after owner approval.
+- Extracts structured orders from WhatsApp messages.
+- Saves orders and conversation history in JSON files.
+- Handles errors and generates a session report.
+
+### How to Run
+
+```powershell
+cd code
+uv run project_m2_business_assistant.py
+```
+
+Make sure Ollama is running and the `llama3.2` model is installed.
+
+### AI Tools
+
+| Tool | Description |
+|---|---|
+| `get_price` | Reads service prices from `business.json` |
+| `get_info` | Reads working hours, delivery information and other business details |
+| `order_status` | Checks order status from saved orders |
+| `place_order` | Calculates the total in Python and requests owner approval before saving |
+
+### Commands
+
+| Command | Purpose |
+|---|---|
+| `/import` | Extract a structured order from a WhatsApp message |
+| `/orders` | Display saved orders |
+| `/reset` | Clear conversation history without deleting orders |
+| `bye` | Exit and display the session report |
+
+### Project Screenshot
+
+![AI Business Assistant Session](docs/project-m2-final-run.png)
+
+*Screenshot will be added after the full session is captured.*
+
+### Business Value
+
+This assistant saves the business owner time by automating repetitive customer questions, price inquiries, and order recording. A business could pay a monthly maintenance fee for keeping its information updated, monitoring errors, and supporting its customer-service workflow.
+
+### Technology Stack
+
+Python, LangChain, Ollama, Pydantic, JSON, and uv.
