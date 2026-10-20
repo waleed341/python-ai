@@ -1,0 +1,25 @@
+
+{
+  "business_name": "Zentrox Lab",
+  "business_type": "Software Development and AI Automation Agency",
+  "location": "Lahore, Pakistan",
+  "services": [
+    "Website Development",
+    "AI Chatbot Development",
+    "Business Process Automation",
+    "E-commerce Development",
+    "Custom Software Development"
+  ],
+  "prices": {
+    "website_development": 30000,
+    "ai_chatbot": 25000,
+    "business_automation": 20000,
+    "ecommerce_website": 50000,
+    "custom_software": 80000
+  },
+  "currency": "PKR",
+  "working_hours": "Monday to Saturday, 10 AM to 6 PM",
+  "delivery_time": "Depends on project requirements and complexity",
+  "support": "Customer support is available during working hours",
+  "payment_policy": "Payment terms are discussed before starting a project"
+}

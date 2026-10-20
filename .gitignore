@@ -3,3 +3,7 @@
 __pycache__/
 *.pyc
 .env
+# Private customer data
+code/chat_history.json
+code/errors.log
+code/orders.json
