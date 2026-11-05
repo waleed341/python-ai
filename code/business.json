@@ -1,18 +1,17 @@
-
 {
-  "name": "Zentrox Lab",
-  "type": "Software Development and AI Automation Agency",
+  "name": "Sweet Crumbs",
+  "type": "Bakery",
   "city": "Lahore, Pakistan",
-  "hours": "Monday to Saturday, 10 AM to 6 PM",
-  "delivery": "Depends on project requirements and complexity",
-  "support": "Customer support is available during working hours",
-  "payment_policy": "Payment terms are discussed before starting a project",
+  "hours": "Daily, 9 AM to 10 PM",
+  "delivery": "Delivery in Lahore: 200 PKR; free for orders from 3,000 PKR",
+  "support": "Contact the bakery owner during opening hours",
+  "payment_policy": "Confirm payment terms with the owner before ordering",
   "currency": "PKR",
   "prices": {
-    "website development": 30000,
-    "ai chatbot": 25000,
-    "business automation": 20000,
-    "ecommerce website": 50000,
-    "custom software": 80000
+    "chocolate cake": 1500,
+    "cupcake": 250,
+    "brownie": 300,
+    "cookie": 200,
+    "custom cake": 4500
   }
 }

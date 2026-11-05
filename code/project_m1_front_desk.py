@@ -44,7 +44,7 @@ while True:
     messages += 1
 
     # Complaints must come first, even if a message includes other keywords.
-    if "refund" in message or "complaint" in message or "late" in message:
+    if "refund" in message or "complaint" in message or "late" in message.strip(".!?").split():
         complaints += 1
         answered_by_rules += 1
         print(f"{BOT_NAME}: Sorry about that. A manager will call you within 1 hour.")

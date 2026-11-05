@@ -43,6 +43,10 @@ def load_faq() -> dict:
         print("Error: faq.json is damaged or contains invalid JSON.")
         raise SystemExit(1)
 
+    except OSError:
+        print("Error: faq.json could not be read. Check folder permissions.")
+        raise SystemExit(1)
+
 
 def load_history() -> list[dict]:
     """Load old chat messages or start with an empty history."""
@@ -74,17 +78,22 @@ def load_history() -> list[dict]:
         print("History file was damaged. Starting a fresh chat.")
         return []
 
+    except OSError:
+        print("History file could not be read. Starting a fresh chat.")
+        return []
+
 
 def save_history(history: list[dict]) -> None:
     """Save chat messages as readable JSON."""
 
-    with open(HISTORY_FILE, "w", encoding="utf-8") as file:
-        json.dump(
-            history,
-            file,
-            indent=2,
-            ensure_ascii=False
-        )
+    try:
+        temporary = HISTORY_FILE.with_suffix(".tmp")
+        with open(temporary, "w", encoding="utf-8") as file:
+            json.dump(history, file, indent=2, ensure_ascii=False)
+        temporary.replace(HISTORY_FILE)
+    except OSError as error:
+        log_error(error)
+        print("Bot: Your chat is in memory, but could not be saved. Check folder permissions.")
 
 
 def log_error(error: Exception) -> None:
@@ -92,14 +101,18 @@ def log_error(error: Exception) -> None:
 
     timestamp = datetime.now().isoformat(timespec="seconds")
 
-    with open(ERROR_FILE, "a", encoding="utf-8") as file:
-        file.write(
-            f"{timestamp} | {type(error).__name__}: {error}\n"
-        )
+    try:
+        with open(ERROR_FILE, "a", encoding="utf-8") as file:
+            file.write(f"{timestamp} | {type(error).__name__}: {error}\n")
+    except OSError:
+        print("Bot: The local error log could not be written.")
 
 
 # Load business information.
 facts = load_faq()
+if not isinstance(facts, dict) or not isinstance(facts.get("prices"), dict):
+    print("Error: faq.json must contain business facts and a prices dictionary.")
+    raise SystemExit(1)
 
 # WHY: The bot reads facts from JSON rather than
 # hardcoding business prices in Python.
@@ -107,7 +120,7 @@ system_message = (
     "You are a helpful customer support assistant.\n"
     "Answer questions using these business facts:\n"
     f"{json.dumps(facts, ensure_ascii=False, indent=2)}\n"
-    "Do not invent prices, services, or policies.\n"
+    "Do not invent prices, products, or policies.\n"
     "If information is missing, say you do not know.\n"
     "Remember details the customer shares in conversation."
 )
@@ -125,7 +138,7 @@ history = load_history()
 
 print(
     f"{facts.get('business_name', 'Business')} Bot: "
-    "Ask me anything. Commands: /reset, bye"
+    "Ask me anything. Commands: /reset, /export, bye"
 )
 
 
@@ -143,6 +156,17 @@ while True:
     if question.lower() == "bye":
         print("Bot: Goodbye! Your chat is saved.")
         break
+
+    if question.lower() == "/export":
+        try:
+            with (BASE_DIR / "transcript.txt").open("w", encoding="utf-8") as file:
+                for entry in history:
+                    file.write(f"{entry['role']}: {entry['content']}\n")
+            print("Bot: Exported transcript.txt.")
+        except OSError as error:
+            log_error(error)
+            print("Bot: Transcript could not be exported.")
+        continue
 
     if question.lower() == "/reset":
         history.clear()
@@ -178,7 +202,7 @@ while True:
 
         print("Bot:", answer)
 
-    except (httpx.ConnectError, ollama.ResponseError) as error:
+    except (httpx.TransportError, ollama.ResponseError, ConnectionError) as error:
         log_error(error)
 
         # WHY: Remove the unanswered question

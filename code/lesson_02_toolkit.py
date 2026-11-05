@@ -1,10 +1,10 @@
 
 uv = "0.13.0"
 python = "3.13.16"
-editor = "1.141.0"
+editor = "1.145.0"
 git = "2.53.0"
-ollama = "0.40.3"
-claude = "2.1.291"
+ollama = "0.40.14"
+claude = "2.1.301"
 
 print("My AI Dev Toolkit")
 print("-----------------")

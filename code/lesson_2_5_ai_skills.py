@@ -2,7 +2,7 @@
 """
 Lesson 2.5 - AI Skills Toolkit
 
-A reusable AI toolkit for a software business.
+A reusable AI toolkit for a bakery.
 Skills: summarize text, translate text, and reply to reviews.
 """
 
@@ -63,7 +63,7 @@ def reply_to_review(review: str) -> str:
     return ask_ai(
         prompt=f"Write a short reply to this customer review:\n{review}",
         system=(
-            "You represent Zentrox Software Studio, a software business. "
+            "You represent Sweet Crumbs, a bakery. "
             "Thank the customer, acknowledge concerns, and stay professional. "
             "Do not promise refunds or invent business policies."
         ),
@@ -95,8 +95,8 @@ usage = {
 
 
 print(
-    "Zentrox AI Toolkit. "
-    "Commands: /summarize, /translate, /reply, bye"
+    "Sweet Crumbs AI Toolkit. "
+    "Commands: /summarize, /translate, /reply, /batch, bye"
 )
 
 
@@ -150,10 +150,20 @@ while True:
         print("AI:", result)
         print(f"    (review was about {estimate_tokens(review)} tokens)")
 
+    elif command == "/batch":
+        reviews = [
+            "The chocolate cake was delicious.",
+            "The cupcakes were good, but delivery was late.",
+            "The brownies were fresh and tasty.",
+        ]
+        for number, review in enumerate(reviews, start=1):
+            print(f"{number}. {reply_to_review(review)}")
+            usage["reply"] += 1
+
     else:
         print(
             "Unknown command. Try /summarize, "
-            "/translate, /reply or bye."
+            "/translate, /reply, /batch or bye."
         )
 
 

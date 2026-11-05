@@ -1,7 +1,7 @@
 
 """Lesson 1.5: AI Model Profile Card."""
 
-# Use actual model information verified through Ollama.
+# WHY: Keep model configuration separate so the same calculation works for other models.
 model_name = "gemma3:270m"
 context_window = 32768
 price_per_1k_tokens = 0.0
@@ -18,8 +18,8 @@ print(f"Runs Locally: {runs_locally} | Type: {type(runs_locally)}")
 # Convert input to int because input() returns a string.
 tokens_used = int(input("\nEnter tokens used per chat: "))
 
-# Calculate the estimated cost using the price per 1000 tokens.
-estimated_cost = (tokens_used / 1000) * price_per_1k_tokens
+# WHY: Round the estimate to two decimals because the task reports a money amount.
+estimated_cost = round((tokens_used / 1000) * price_per_1k_tokens, 2)
 
 print("\n=== Token Cost Estimate ===")
 print(f"Tokens Used: {tokens_used}")

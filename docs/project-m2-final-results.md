@@ -1,98 +1,68 @@
-# Module 2 Final Project — AI Quality Test Results
+# Sweet Crumbs AI Business Assistant: actual verification
 
-**Project:** Zentrox Lab AI Business Assistant  
-**Course:** Python for AI — Module 2, Checkpoint 2  
-**Status:** Initial testing completed; remaining tests pending
+Automated local llama3.2 session using temporary order/history storage.
+Owner approvals in this demo were simulated yes answers for sample orders only.
+The following output and echoed test inputs are unedited.
 
-## 1. Verified Test Results
+```text
+Warning: orders.json not found; starting fresh.
+Warning: transcript.json not found; starting fresh.
+============================================================
+  Sweet Crumbs AI Business Assistant
+============================================================
+Ask anything, or use: /import, /orders, /reset, bye
+You: What are your hours?
+  [tool] get_info({'topic': 'hours'}) -> hours: Daily, 9 AM to 10 PM
+Assistant: Sweet Crumbs is open daily from 9 AM to 10 PM.
+You: Compare the price of a brownie and a cupcake.
+  [tool] get_price({'item': 'brownie'}) -> brownie costs 300 PKR
+  [tool] get_price({'item': 'cupcake'}) -> cupcake costs 250 PKR
+Assistant: The brownie costs 300 PKR and the cupcake costs 250 PKR.
+You: My name is Ali. Please place an order for 2 cupcakes.
+  [approve] 2 x cupcake for Ali = 500 PKR. Save order? (yes/no) yes
+  [tool] place_order({'item': 'cupcake', 'quantity': '2', 'customer': 'Ali'}) -> Order A101 placed for Ali: 2 x cupcake; total 500 PKR.
+Assistant: Order A101 placed for Ali: 2 x cupcake; total 500 PKR.
+You: Where is order A101?
+  [tool] order_status({'order_id': 'A101'}) -> Order A101 for Ali is received, total 500 PKR
+Assistant: Order A101 for Ali is received, total 500 PKR.
+You: /import
+Paste the WhatsApp message: My name is Sara. I want 2 brownies. Model Town.
+  2 x brownie = 600 PKR
+  Customer: Sara, Address: Model Town
+  Total: 600 PKR
+  [approve] 2 x brownie for Sara = 600 PKR. Save order? (yes/no) yes
+  Order A102 placed for Sara: 2 x brownie; total 600 PKR.
+You: /orders
+  1. A101 | Ali | 500 PKR | received
+  2. A102 | Sara | 600 PKR | received
+You: bye
+Assistant: Goodbye! Everything is saved.
+============================================================
+Session report
+Questions: 4 | Answered: 4 | Errors: 0
+WhatsApp imports: 1 | Orders placed: 2 | Orders on file: 2
+Tool calls:
+  get_price: 2
+  get_info: 1
+  order_status: 1
+  place_order: 1
+============================================================
 
-| Test | Expected | Actual Result | Status |
-|---|---|---|---|
-| Application startup | Starts without crashing | Application started and displayed the `You:` prompt | PASS |
-| Service price lookup | Use `get_price` and return the official price | Agent called `get_price` for AI chatbot and returned 25,000 PKR | PASS |
-| Business information | Use `get_info` | Not tested | PENDING |
-| Order status | Use `order_status` | Not tested in final project | PENDING |
-| Owner approval | Ask before saving orders | Not tested in final project | PENDING |
-| WhatsApp import | Extract, validate and calculate orders | Not tested | PENDING |
-| Persistent memory | Remember previous conversations | Not tested | PENDING |
-| Error handling | Handle failures without crashing | Not tested | PENDING |
-| Session report | Print statistics on exit | Not tested | PENDING |
+```
 
-## 2. Observed Successful Agent Response
+See the final report for actual counts. The demo does not place real bakery orders.
 
-**User question:**
+## Additional checks
 
-What is the price of AI chatbot?
+The temporary-data checks also passed owner rejection without a write, malformed
+orders/history recovery, missing business-file exit, invalid-model logging,
+strict positive item quantities, reloading an edited cupcake price, and supplying
+a saved customer name to the model after restarting. Unknown tools and wrong tool
+arguments were checked in the manual agent; its MAX_STEPS fallback was verified.
+The create_agent version returned a rejected order's exact cancellation message
+without sending it back to a model that might rewrite the outcome.
 
-**Tool call:**
-
-`get_price({'item': 'AI chatbot'})`
-
-**Tool result:**
-
-`ai chatbot costs 25,000 PKR`
-
-**Agent response:**
-
-The current price of our AI chatbot is 25,000 PKR.
-
-**Result:** PASS
-
-The agent selected the correct tool and returned the price defined in `business.json`.
-
-## 3. AI Quality Findings From Lesson 2.8
-
-The following issues were observed during the earlier First Agent assignment. They are historical findings, not verified failures of the final project.
-
-| Observation | Problem | Improvement in final project |
-|---|---|---|
-| Approved order | Agent said it was still waiting for approval after the order had already been placed | System prompt instructs the agent to respect the tool's approval result |
-| Rejected order | Agent said the order was placed and then cancelled | System prompt instructs the agent to state clearly that rejected orders were not placed |
-| Order tracking | Agent promised an automatic notification that was not implemented | System prompt prohibits unsupported notification promises |
-| Price comparison | Agent returned two correct prices but did not state the difference | Further comparison testing is required |
-
-**Verification status:** These improvements are implemented as instructions, but their effectiveness has not yet been tested in the final project.
-
-## 4. WhatsApp Import Quality Tests
-
-| Test | Expected validation | Actual result | Status |
-|---|---|---|---|
-| Normal order with customer name | Extract valid services and Python total | Not tested | PENDING |
-| Roman Urdu order | Extract correct items and quantities | Not tested | PENDING |
-| Unknown service | Print `CHECK:` warning | Not tested | PENDING |
-| Missing or invented customer name | Print `CHECK:` warning | Not tested | PENDING |
-| Delivery question rather than an order | Request a human reply | Not tested | PENDING |
-
-## 5. Safety Measures Implemented
-
-The Python code includes these safeguards:
-
-- Official prices are loaded from `business.json`.
-- Order totals are calculated in Python.
-- Owner approval is requested before saving an order.
-- Unknown tools and invalid tool arguments are handled.
-- WhatsApp imports with validation warnings are not saved.
-- Agent execution is limited by `MAX_STEPS`.
-- Conversation history is saved as plain dictionaries.
-- Orders, transcripts and error logs are intended to remain outside Git tracking.
-
-These are code-level safeguards. Full runtime verification remains pending.
-
-## 6. Remaining Instructor Requirements
-
-The official assignment also requires:
-
-- Complete agent testing table.
-- Five WhatsApp import tests.
-- Break-the-bot tests.
-- Two documented final-project agent mistakes or near-misses.
-- Two documented final-project WhatsApp extraction mistakes or near-misses.
-- At least one verified improvement to a check or tool docstring.
-- Screenshot showing a full session and session report.
-- Four-minute project demonstration.
-
-## 7. Conclusion
-
-The final AI Business Assistant successfully started and answered one verified price question using the correct tool.
-
-The remaining functionality has been implemented but has not yet been fully tested. The project should not be described as completely tested or client-ready until the pending checks are completed.
+Demo orders are samples only. Existing local software-demo records were backed up
+before switching the live business facts to the bakery; no real customer orders
+were changed by these temporary tests. Marketing copy remains subject to owner
+review, as documented in the Content Studio results.

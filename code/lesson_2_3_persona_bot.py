@@ -18,23 +18,23 @@ config = {
 
 # Sample business facts for this assignment.
 facts = {
-    "name": "Zentrox Software Studio",
+    "name": "Sweet Crumbs",
     "city": "Lahore",
-    "business_type": "Software Development Agency",
-    "working_hours": "Monday to Saturday, 9 AM to 6 PM",
-    "contact": "Contact us through our website",
-    "services": "Websites, chatbots, and automation",
+    "business_type": "Bakery",
+    "working_hours": "Daily, 9 AM to 10 PM",
+    "contact": "Ask the bakery owner during opening hours",
+    "products": "Cakes, cupcakes, brownies and cookies",
     "prices": {
-        "website": 30000,
-        "chatbot": 20000,
-        "automation": 15000
+        "chocolate cake": 1500,
+        "cupcake": 250,
+        "brownie": 300
     }
 }
 
 personas = {
     "friendly": "warm and cheerful, uses simple words",
     "formal": "professional and polite",
-    "sales": "enthusiastic and suggests relevant services"
+    "sales": "enthusiastic and suggests relevant products"
 }
 
 current_persona = "friendly"
@@ -48,7 +48,7 @@ def build_system_message(persona_name):
         f"Your speaking style is: {style}.\n"
         f"Business facts: {facts}\n"
         "Only use these facts when answering business questions. "
-        "Never invent prices, services, or business details. "
+        "Never invent prices, products, or business details. "
         "If information is missing, politely say you do not know. "
         "Keep answers short."
     )
@@ -66,7 +66,7 @@ messages = [
     }
 ]
 
-print("Bot ready. Commands: /persona friendly|formal|sales, /price <item>, bye")
+print("Bot ready. Commands: /persona friendly|formal|sales, /price <item>, /add <item> <price>, bye")
 
 while True:
     question = input("You: ").strip()
@@ -95,8 +95,20 @@ while True:
         print(f"Bot: Style changed to: {style}")
         continue
 
-    if question.lower().startswith("/price "):
-        item = question.split(maxsplit=1)[1].strip().lower()
+    if question.lower().startswith("/add "):
+        # WHY: Rebuild the system facts so the model sees the owner's new price.
+        parts = question[5:].rsplit(maxsplit=1)
+        if len(parts) != 2 or not parts[1].isdigit():
+            print("Bot: Use /add <item> <nonnegative whole PKR price>.")
+            continue
+        item, price_text = parts
+        facts["prices"][item.strip().lower()] = int(price_text)
+        messages[0]["content"] = build_system_message(current_persona)
+        print(f"Bot: Added {item.strip().lower()} at {int(price_text):,} PKR.")
+        continue
+
+    if question.lower() == "/price" or question.lower().startswith("/price "):
+        item = question[6:].strip().lower()
 
         # WHY: Read exact prices directly instead of asking AI to guess.
         price = facts["prices"].get(item)

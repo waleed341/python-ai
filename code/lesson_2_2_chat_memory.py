@@ -19,6 +19,7 @@ system_message = {
 }
 
 messages = [system_message]
+questions = []
 
 print("Tutor: Ask me anything. Commands: /reset, /count, bye")
 
@@ -43,6 +44,7 @@ while True:
         continue
 
     # WHY: Save user questions so the AI understands follow-up questions.
+    questions.append(question)
     messages.append({
         "role": "user",
         "content": question
@@ -65,3 +67,8 @@ while True:
     if response.usage_metadata:
         tokens_sent = response.usage_metadata["input_tokens"]
         print(f"       (tokens sent: {tokens_sent})")
+
+print(f"Questions asked: {len(questions)}")
+if questions:
+    print(f"First question: {questions[0]}")
+    print(f"Last question: {questions[-1]}")

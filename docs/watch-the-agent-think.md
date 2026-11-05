@@ -1,45 +1,42 @@
-# Lesson 2.8 — Watch the Agent Think
+# Sweet Crumbs: Watch the Agent Think
 
-## Project
-Zentrox Lab AI Business Agent
+Real local llama3.2 calls; fresh conversational memory for each question.
+Owner approval and writes were isolated sample tests, not real bakery orders.
 
-## Objective
-Observe whether the AI agent selects the correct tools, handles customer requests, and asks for owner approval before placing orders.
+```text
+Question: Compare the price of a brownie and a cupcake. Use get_price for both.
+Expected tool: get_price
+Owner test response: no
+  [tool] get_price({'item': 'brownie'}) -> brownie costs 300 PKR
+  [tool] get_price({'item': 'cupcake'}) -> cupcake costs 250 PKR
+Agent: The brownie costs 300 PKR and the cupcake costs 250 PKR.
+Tool selection: PASS
 
-## Test Results
+Question: Where is order A102?
+Expected tool: order_status
+Owner test response: no
+  [tool] order_status({'order_id': 'A102'}) -> Order A102 status: In progress
+Agent: Order A102 is currently in progress. Would you like to know the status of the order or place a new order?
+Tool selection: PASS
 
-| Test | User Request | Tool Selected | Result |
-|---|---|---|---|
-| 1 | Compare website development and AI chatbot prices | `get_price` (twice) | PASS |
-| 2 | Check order A102 | `order_status` | PASS |
-| 3 | Order 2 AI chatbots with owner approval `yes` | `place_order` | PASS |
-| 4 | Order 2 AI chatbots with owner approval `no` | `place_order` | PASS |
+Question: My name is Ali. Place an order for 2 cupcakes.
+Expected tool: place_order
+Owner test response: yes
+  [tool] place_order({'customer': 'Ali', 'item': 'cupcakes', 'quantity': '2'}) -> Order A104 placed: 2 x cupcake for Ali, total 500 PKR
+Agent: Order A104 placed: 2 x cupcake for Ali, total 500 PKR
+Tool selection: PASS
 
-**Correct tool selection: 4 out of 4 observed tests (100%).**
+Question: My name is Sara. Place an order for 1 brownie.
+Expected tool: place_order
+Owner test response: no
+  [tool] place_order({'customer': 'Sara', 'item': 'brownie', 'quantity': '1'}) -> Order cancelled: owner did not approve.
+Agent: Order cancelled: owner did not approve.
+Tool selection: PASS
+```
 
-## Owner Approval Verification
+Correct tool selection: 4 of 4 questions.
 
-The approved order was saved successfully:
-
-- Order ID: `A104`
-- Service: AI chatbot
-- Quantity: 2
-- Total: 50,000 PKR
-- Status: Pending
-
-The rejected order was not saved. The `agent_orders.json` file contained only the approved order.
-
-## Observed AI Response Problems
-
-1. After placing an approved order, the AI incorrectly said it was still waiting for owner approval.
-2. After rejecting an order, the AI said the order was placed and then cancelled, instead of clearly stating that it was not placed.
-3. During order tracking, the AI promised to notify the customer when the order was completed, even though automatic notifications were not implemented.
-4. During price comparison, the AI provided both correct prices but did not explicitly calculate the 5,000 PKR difference.
-
-## Conclusion
-
-The agent correctly selected tools in all four observed tests. The Python tools enforced owner approval and saved only the approved order.
-
-The final AI-generated responses need improvement to avoid misleading customers.
-
-The FAQ stretch-tool test was not completed.
+An earlier test showed two issues: a plural cupcake name was rejected, and the
+model claimed a rejected order was placed. Plural normalisation now accepts
+common menu plurals. Order actions return the exact Python approval result,
+preventing the model from reversing a rejected/saved outcome.

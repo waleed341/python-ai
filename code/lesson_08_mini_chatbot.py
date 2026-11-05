@@ -1,10 +1,10 @@
 
-"""Lesson 1.8: Rule-based Business Helper Bot for City Mart."""
+"""Lesson 1.8: Rule-based Business Helper Bot for Sweet Crumbs."""
 
-BOT = "City Mart Bot"
+BOT = "Sweet Crumbs Bot"
 
 print("=" * 45)
-print("WELCOME TO CITY MART")
+print("WELCOME TO SWEET CRUMBS")
 print("=" * 45)
 print(f"{BOT}: Hello! I can help with prices, hours, location, orders, and complaints.")
 print(f"{BOT}: Type 'bye' to exit or 'human' to request assistance.")
@@ -44,19 +44,19 @@ while True:
         break
 
     # WHY: Complaints must come before orders, because an order may be late.
-    elif any(word in message for word in ("refund", "complaint", "late", "damaged")):
+    elif "late" in message.strip(".!?").split() or any(word in message for word in ("refund", "complaint", "damaged")):
         complaint_count += 1
         print(f"{BOT}: Sorry about that, {name}.")
-        print(f"{BOT}: Please contact the shop manager for assistance.")
+        print(f"{BOT}: Please contact the bakery owner for assistance.")
 
     elif any(word in message for word in ("hour", "open", "time")):
-        print(f"{BOT}: Our demo shop is open daily from 9 AM to 10 PM.")
+        print(f"{BOT}: Our demo bakery is open daily from 9 AM to 10 PM.")
 
     elif any(word in message for word in ("price", "cost", "how much")):
-        print(f"{BOT}: Example prices: Milk 250 PKR, Bread 180 PKR, Eggs 350 PKR.")
+        print(f"{BOT}: Example prices: Cupcake 250 PKR, Brownie 300 PKR, Chocolate cake 1,500 PKR.")
 
     elif any(word in message for word in ("where", "location", "address")):
-        print(f"{BOT}: Our demo shop is based in Lahore, Pakistan.")
+        print(f"{BOT}: Our demo bakery is based in Lahore, Pakistan.")
 
     elif "order" in message or "delivery" in message:
         print(f"{BOT}: {name}, you can place an order at the shop.")
@@ -70,7 +70,7 @@ while True:
 
         # WHY: Unanswered questions can become prompts for an LLM in Module 2.
         ai_prompt = (
-            f"You are a helpful customer support assistant for City Mart. "
+            f"You are a helpful customer support assistant for Sweet Crumbs. "
             f"Answer {name}'s question politely in 2 short sentences. "
             f"Do not invent prices, policies, or contact details. "
             f"Question: {message}"

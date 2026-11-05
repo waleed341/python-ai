@@ -1,7 +1,7 @@
 # Module 2 Final Project — AI Business Assistant
 
-**Business:** Zentrox Lab  
-**Project:** AI Business Assistant  
+**Business:** Sweet Crumbs
+**Project:** AI Business Assistant
 **Course:** Python for AI — Module 2, Checkpoint 2
 
 ## 1. Business Data Design
@@ -10,25 +10,25 @@ Business information will be stored in `code/business.json`. The owner can updat
 
 | Key | Example value | Purpose |
 |---|---|---|
-| name | Zentrox Lab | Business name |
-| type | Software Development and AI Automation Agency | Business category |
+| name | Sweet Crumbs | Business name |
+| type | Bakery | Business category |
 | city | Lahore, Pakistan | Business location |
-| hours | Monday to Saturday, 10 AM to 6 PM | Working hours |
-| delivery | Depends on project requirements | Delivery information |
+| hours | Daily, 9 AM to 10 PM | Working hours |
+| delivery | 200 PKR in Lahore; free from 3,000 PKR | Delivery information |
 | support | Available during working hours | Customer support |
-| payment_policy | Discussed before starting a project | Payment information |
+| payment_policy | Confirm payment terms with the bakery owner | Payment information |
 | currency | PKR | Currency |
-| prices | Nested dictionary of services and prices | Official service prices |
+| prices | Nested dictionary of products and prices | Official item prices |
 
-### Service Prices
+### Bakery Prices
 
-| Service | Price (PKR) |
+| Item | Price (PKR) |
 |---|---:|
-| Website Development | 30,000 |
-| AI Chatbot | 25,000 |
-| Business Automation | 20,000 |
-| Ecommerce Website | 50,000 |
-| Custom Software | 80,000 |
+| Chocolate Cake | 1,500 |
+| Cupcake | 250 |
+| Brownie | 300 |
+| Cookie | 200 |
+| Custom Cake | 4,500 |
 
 ## 2. Tools Design
 
@@ -36,7 +36,7 @@ The AI will select tools, but Python will execute them.
 
 | Tool | Reads / Checks / Acts | Inputs | Needs owner approval? |
 |---|---|---|---|
-| `get_price` | Reads official service price | `item` | No |
+| `get_price` | Reads official item price | `item` | No |
 | `get_info` | Reads business information | `topic` | No |
 | `order_status` | Checks saved order status | `order_id` | No |
 | `place_order` | Calculates total and saves a new order | `item`, `quantity`, `customer` | **Yes** |
@@ -75,22 +75,22 @@ All tools will use `@tool(parse_docstring=True)` with type hints and `Args:` doc
 | Test | Expected behavior | Tools called | Pass? |
 |---|---|---|---|
 | Ask the business name | Short answer | | Not tested |
-| Ask a service price | Correct price from JSON | | Not tested |
-| Compare two service prices | Two price lookups | | Not tested |
-| Ask working hours | Read official hours | | Not tested |
-| Check a saved order | Read status from `orders.json` | | Not tested |
-| Reject an order | No order saved | | Not tested |
-| Approve an order | Order saved with Python total | | Not tested |
-| Ask about an unavailable service | No invented price | | Not tested |
-| Request a free service against the rules | No unapproved order | | Not tested |
+| Ask an item price | Correct price from JSON | get_price | PASS |
+| Compare two item prices | Two price lookups | get_price twice | PASS |
+| Ask working hours | Read official hours | get_info | PASS |
+| Check a saved order | Read status from `orders.json` | order_status | PASS |
+| Reject an order | No order saved | place_order, isolated check | PASS |
+| Approve an order | Order saved with Python total | place_order | PASS |
+| Ask about an unavailable item | No invented price | | Not tested |
+| Request a free item against the rules | No unapproved order | | Not tested |
 
 ### WhatsApp Import Tests
 
 | Test | Expected behavior | Actual result | Pass? |
 |---|---|---|---|
-| Normal order with name and address | Correct items and total | | Not tested |
-| Roman Urdu order with two services | Correct services and quantities | | Not tested |
-| Order containing an unknown service | `CHECK:` warning | | Not tested |
+| Normal order with name and address | Correct items and total | 2 brownies, 600 PKR | PASS |
+| Roman Urdu order with two products | Correct products and quantities | | Not tested |
+| Order containing an unknown item | `CHECK:` warning | | Not tested |
 | Order without a customer name | Missing or invented name flagged | | Not tested |
 | Message asking only about delivery | Not an order; needs human reply | | Not tested |
 
@@ -99,11 +99,11 @@ All tools will use `@tool(parse_docstring=True)` with type hints and `Args:` doc
 | Test | Expected behavior | Actual result | Pass? |
 |---|---|---|---|
 | Ollama offline | Friendly message and error log | | Not tested |
-| Invalid model name | Friendly error and log | | Not tested |
-| Damaged JSON files | Warning without crashing | | Not tested |
-| Missing `business.json` | Clear message without traceback | | Not tested |
-| Owner changes a price | New price used after restart | | Not tested |
-| Restart after a conversation | Previous conversation remembered | | Not tested |
+| Invalid model name | Friendly error and log | Simulated ResponseError, logged | PASS |
+| Damaged JSON files | Warning without crashing | Temporary malformed orders/transcript recovered | PASS |
+| Missing `business.json` | Clear message without traceback | Exited with status 1 and a clear message | PASS |
+| Owner changes a price | New price used after restart | Temporary cupcake price reloaded as 999 PKR | PASS |
+| Restart after a conversation | Previous conversation remembered | Saved name supplied in the next model request | PASS |
 
 ## 6. Development Plan
 

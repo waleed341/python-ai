@@ -10,7 +10,7 @@ from langchain.chat_models import init_chat_model
 
 # Ask the student what they want to learn.
 topic = input("Enter a topic: ").strip()
-level = input("Enter your level (beginner/intermediate/advanced): ").strip()
+level = input("Enter your level (beginner or expert): ").strip()
 
 if topic == "":
     topic = "Python variables"
@@ -23,7 +23,7 @@ system_message = f"""
 You are a friendly AI tutor.
 Explain {topic} to a {level} student.
 Use simple English and one practical example.
-Keep your answer short.
+Keep your answer to 3 short sentences.
 """
 
 # WHY: A low temperature helps produce focused, consistent answers.
@@ -45,7 +45,7 @@ end_time = time.time()
 execution_time = end_time - start_time
 
 print("\n--- AI Tutor Answer ---")
-print(response.content)
+print(response.text)
 
 # Display token usage when the model provides it.
 usage = response.usage_metadata
@@ -58,4 +58,6 @@ if usage:
 else:
     print("\nToken usage not available.")
 
-print(f"\nExecution time: {execution_time:.2f} seconds")
+# WHY: Ollama reports model duration in nanoseconds; convert it to seconds.
+model_seconds = response.response_metadata.get("total_duration", 0) / 1_000_000_000
+print(f"\n{(usage or {}).get('total_tokens', 0)} tokens in {model_seconds or execution_time:.1f} seconds")

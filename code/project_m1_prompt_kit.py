@@ -13,6 +13,7 @@ print("\n====================================")
 print(f"AI Prompt Kit for {name}")
 print("====================================")
 
+# WHY: A role, audience and clear task make the marketing prompt reproducible.
 prompt1 = f"Write a short Instagram post for {name}, a {business} in {city}. The target customers are {customers}. Keep the tone friendly and add a call to action."
 
 
@@ -36,3 +37,11 @@ print(prompt3)
 print("\n------------------------------")
 print("[4] WhatsApp Auto-Reply")
 print(prompt4)
+
+# Module 2.1 stretch: explicitly opt in to a real AI answer for Prompt 1.
+import sys
+if "--ai" in sys.argv:
+    from langchain.chat_models import init_chat_model
+    model = init_chat_model("ollama:llama3.2", temperature=0.2)
+    print("\nAI Marketing Answer:")
+    print(model.invoke(prompt1).text)

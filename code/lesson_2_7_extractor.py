@@ -3,11 +3,12 @@
 Lesson 2.7 - AI Order Extractor
 
 Extract structured orders from English and Roman Urdu messages.
-Validate services and customer names, calculate prices in Python,
+Validate products and customer names, calculate prices in Python,
 and save accepted orders to orders.json.
 """
 
 import json
+import csv
 import re
 from pathlib import Path
 
@@ -16,11 +17,11 @@ from langchain_ollama import ChatOllama
 
 # WHY: Prices come from our business menu, not from AI guesses.
 PRICES = {
-    "website development": 30000,
-    "ai chatbot": 25000,
-    "business automation": 20000,
-    "ecommerce website": 50000,
-    "custom software": 80000,
+    "chocolate cake": 1500,
+    "cupcake": 250,
+    "brownie": 300,
+    "cookie": 200,
+    "custom cake": 4500,
 }
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -30,20 +31,20 @@ ORDERS_FILE = BASE_DIR / "orders.json"
 # Five different customer messages required by the task.
 MESSAGES = [
     # 1. Normal order
-    "My name is Ali. I need 1 website development project. Lahore.",
+    "My name is Ali. I need 1 chocolate cake. Lahore.",
 
-    # 2. Multiple services
-    "I am Sara. Please book 2 AI chatbots and 1 business automation. Gulberg.",
+    # 2. Multiple products
+    "I am Sara. Please book 2 cupcakes and 1 brownie. Gulberg.",
 
     # 3. Mixed valid and off-menu items
-    "My name is Bilal. I need 1 pizza and 1 ecommerce website. Model Town.",
+    "My name is Bilal. I need 1 pizza and 1 cookie. Model Town.",
 
     # 4. Not an order
     "Hi, do you provide customer support on Sundays?",
 
     # 5. Roman Urdu
-    "Salam, mera naam Ahmed hai. Mujhe 2 AI chatbot aur "
-    "1 website development chahiye. Johar Town.",
+    "Salam, mera naam Ahmed hai. Mujhe 2 cupcake aur "
+    "1 chocolate cake chahiye. Johar Town.",
 ]
 
 
@@ -84,9 +85,9 @@ def extract_order(message: str) -> dict | None:
     prompt = f"""
 You are an accurate customer order extraction assistant.
 
-Business: Zentrox Lab
+Business: Sweet Crumbs
 
-Official service menu:
+Official bakery menu:
 {json.dumps(list(PRICES.keys()), indent=2)}
 
 Read the customer message and return JSON matching the schema.
@@ -103,13 +104,13 @@ IMPORTANT RULES:
 
 5. Set is_order to false only when the message contains no purchase request.
 
-6. Normalize known services to their exact official menu names.
+6. Normalize known products to their exact official menu names.
 
 7. Keep unknown item names unchanged.
 
 8. Extract the correct quantity for each requested item.
 
-9. Do not invent customer names, addresses, services, or quantities.
+9. Do not invent customer names, addresses, products, or quantities.
 
 10. Use an empty string if customer name or address is missing.
 
@@ -122,7 +123,7 @@ IMPORTANT RULES:
 Example of a mixed order:
 
 Customer:
-"My name is Bilal. I need 1 pizza and 1 ecommerce website. Model Town."
+"My name is Bilal. I need 1 pizza and 1 cookie. Model Town."
 
 Correct JSON:
 {{
@@ -131,7 +132,7 @@ Correct JSON:
     "address": "Model Town",
     "items": [
         {{"name": "pizza", "quantity": 1}},
-        {{"name": "ecommerce website", "quantity": 1}}
+        {{"name": "cookie", "quantity": 1}}
     ]
 }}
 
@@ -214,10 +215,13 @@ def validate_order(
         quantity = item.get("quantity", 0)
 
         if not isinstance(name, str):
-            checks.append("CHECK: Invalid service name.")
+            checks.append("CHECK: Invalid item name.")
             continue
 
         name = name.strip().lower()
+        aliases = {"cupcakes":"cupcake", "brownies":"brownie", "cookies":"cookie",
+                   "chocolate cakes":"chocolate cake", "custom cakes":"custom cake"}
+        name = aliases.get(name, name)
 
         if name not in PRICES:
             checks.append(f"CHECK: '{name}' is not on the menu.")
@@ -263,7 +267,7 @@ def main() -> None:
     all_checks = []
     total_value = 0
 
-    print("Zentrox Lab - AI Order Extractor\n")
+    print("Sweet Crumbs - AI Order Extractor\n")
 
     for message in MESSAGES:
         print(f"Message: {message}")
@@ -333,5 +337,15 @@ def main() -> None:
     )
     print(f"Saved {len(orders)} orders to orders.json")
 
+    # WHY: CSV export lets the owner inspect line totals in a spreadsheet.
+    with (BASE_DIR / "orders.csv").open("w", newline="", encoding="utf-8-sig") as file:
+        writer = csv.writer(file)
+        writer.writerow(["customer", "item", "quantity", "line_total"])
+        for order in orders:
+            for item in order["items"]:
+                writer.writerow([order["customer"], item["name"], item["quantity"], item["line_total"]])
+    print("Saved item rows to orders.csv")
 
-main()
+
+if __name__ == "__main__":
+    main()

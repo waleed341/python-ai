@@ -1,4 +1,4 @@
-"""Module 2 final: Zentrox Lab AI Business Assistant with safe tool calling."""
+"""Module 2 final: Sweet Crumbs AI Business Assistant with safe tool calling."""
 
 import json
 import re
@@ -21,6 +21,13 @@ ERROR_FILE = BASE_DIR / "errors.log"
 MODEL_NAME = "llama3.2"
 MAX_STEPS = 5
 MEMORY_LIMIT = 8
+
+
+def normalize_item(item: str) -> str:
+    """Normalise bakery plurals without inventing unavailable products."""
+    name = item.strip().lower()
+    return {"cupcakes":"cupcake", "brownies":"brownie", "cookies":"cookie",
+            "chocolate cakes":"chocolate cake", "custom cakes":"custom cake"}.get(name, name)
 
 
 def load_json(path: Path, default: Any) -> Any:
@@ -62,7 +69,7 @@ def calculate_total(items: list[dict[str, Any]], prices: dict[str, int]) -> int:
     """Calculate a validated order total in Python, not with an LLM."""
     total = 0
     for entry in items:
-        name = str(entry["item"]).strip().lower()
+        name = normalize_item(str(entry["item"]))
         quantity = entry["quantity"]
         if name not in prices or type(quantity) is not int or quantity <= 0:
             raise ValueError(f"Invalid order item: {entry}")
@@ -152,12 +159,12 @@ def create_order(customer: str, items: list[dict[str, Any]], address: str = "") 
 
 @tool(parse_docstring=True)
 def get_price(item: str) -> str:
-    """Look up a service price from the owner's business data.
+    """Look up a item price from the owner's business data.
 
     Args:
-        item: Exact service name to look up.
+        item: Exact item name to look up.
     """
-    name = item.strip().lower()
+    name = normalize_item(item)
     if name not in PRICES:
         return f"'{item}' is not on the menu. Available: {', '.join(PRICES)}"
     return f"{name} costs {PRICES[name]:,} PKR"
@@ -174,7 +181,7 @@ def get_info(topic: str) -> str:
     aliases = {"working_hours": "hours", "opening_hours": "hours", "location": "city"}
     key = aliases.get(key, key)
     if key == "prices":
-        return "For prices, use get_price with the requested service."
+        return "For prices, use get_price with the requested bakery item."
     if key not in business:
         return f"Information about '{topic}' is not available in the business file."
     return f"{key}: {business[key]}"
@@ -196,21 +203,21 @@ def order_status(order_id: str) -> str:
 
 @tool(parse_docstring=True)
 def place_order(item: str, quantity: int, customer: str) -> str:
-    """Place an order for one service, only after owner approval.
+    """Place an order for one bakery item, only after owner approval.
 
     Args:
-        item: Exact service name from the price menu.
-        quantity: Positive number of service units.
+        item: Exact item name from the price menu.
+        quantity: Positive number of bakery items.
         customer: Customer name for the new order.
     """
-    return create_order(customer, [{"item": item.strip().lower(), "quantity": quantity}])
+    return create_order(customer, [{"item": normalize_item(item), "quantity": quantity}])
 
 
 TOOL_LIST = [get_price, get_info, order_status, place_order]
 TOOLS = {selected.name: selected for selected in TOOL_LIST}
-llm = ChatOllama(model=MODEL_NAME, base_url="http://127.0.0.1:11434", temperature=0)
+llm = ChatOllama(model=MODEL_NAME, base_url="http://127.0.0.1:11434", temperature=0, client_kwargs={"timeout":60})
 agent = llm.bind_tools(TOOL_LIST)
-SYSTEM_PROMPT = ("You are the Zentrox Lab business assistant. Use get_price for prices, "
+SYSTEM_PROMPT = ("You are the Sweet Crumbs business assistant. Use get_price for prices, "
                  "get_info for business details, order_status for existing orders, and "
                  "place_order for new orders. Never invent prices, hours, status, or promise "
                  "notifications. Never say an order was saved unless the tool confirms it. "
@@ -220,18 +227,18 @@ SYSTEM_PROMPT = ("You are the Zentrox Lab business assistant. Use get_price for 
 
 
 class ExtractedItem(BaseModel):
-    item: str = Field(description="Service requested, preserving the original item name")
-    quantity: int = Field(description="Quantity explicitly requested; use 1 if unspecified")
+    item: str = Field(description="Item requested, preserving the original item name")
+    quantity: int = Field(strict=True, gt=0, description="Positive whole quantity explicitly requested; use 1 if unspecified")
 
 
 class ExtractedOrder(BaseModel):
-    is_order: bool = Field(description="True only if the message requests an order")
+    is_order: bool = Field(strict=True, description="True only if the message requests an order")
     customer: str = Field(description="Customer name stated in message, or empty string")
     address: str = Field(description="Address stated in message, or empty string")
-    items: list[ExtractedItem] = Field(description="Requested services and quantities")
+    items: list[ExtractedItem] = Field(description="Requested products and quantities")
 
 
-extractor = ChatOllama(model=MODEL_NAME, base_url="http://127.0.0.1:11434", temperature=0)
+extractor = ChatOllama(model=MODEL_NAME, base_url="http://127.0.0.1:11434", temperature=0, client_kwargs={"timeout":60})
 
 
 def friendly_error(error: Exception) -> str:
@@ -268,12 +275,15 @@ def run_agent(question: str) -> str:
         messages.append(response)
         if not response.tool_calls:
             return str(response.content)
+        action_result = None
         for call in response.tool_calls:
             name, arguments = call["name"], call["args"]
             selected = TOOLS.get(name)
             tool_counts[name] += 1
             if selected is None:
                 result = f"Unknown tool: {name}"
+            elif name == "place_order" and action_result is not None:
+                result = "An order action was already handled this turn."
             else:
                 try:
                     result = selected.invoke(arguments)
@@ -284,6 +294,11 @@ def run_agent(question: str) -> str:
             print(f"  [tool] {name}({arguments}) -> {result}")
             # WHY: The matching tool_call_id allows the model to read the right result.
             messages.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
+            if name == "place_order" and action_result is None:
+                action_result = str(result)
+        # WHY: Approval and saved-order outcomes are authoritative Python results.
+        if action_result is not None:
+            return action_result
     else:
         return "I reached the maximum number of steps. Please try a simpler request."
 
@@ -311,6 +326,8 @@ def import_whatsapp() -> None:
         raw = json.loads(str(response.content))
         if not isinstance(raw, dict):
             raise ValueError("Extractor did not return a JSON object")
+        # WHY: Valid JSON can still contain wrong types or invalid quantities.
+        raw = ExtractedOrder.model_validate(raw).model_dump()
     except (httpx.ConnectError, ResponseError, ValueError, TypeError, json.JSONDecodeError) as error:
         print(f"  {friendly_error(error)}")
         return
@@ -338,7 +355,7 @@ def import_whatsapp() -> None:
         if not isinstance(entry, dict):
             checks.append("invalid item structure")
             continue
-        name = str(entry.get("item") or "").strip().lower()
+        name = normalize_item(str(entry.get("item") or ""))
         quantity = entry.get("quantity")
         if name not in PRICES:
             checks.append(f"'{name}' is not on the menu")
@@ -389,16 +406,16 @@ try:
         if question.lower() == "bye":
             print("Assistant: Goodbye! Everything is saved.")
             break
-        if question == "/orders":
+        if question.lower() == "/orders":
             show_orders()
             continue
-        if question == "/reset":
+        if question.lower() == "/reset":
             transcript.clear()
             if not save_json(TRANSCRIPT_FILE, transcript):
                 stats["errors"] += 1
             print("Chat memory cleared. Orders are unchanged.")
             continue
-        if question == "/import":
+        if question.lower() == "/import":
             import_whatsapp()
             continue
         stats["questions"] += 1

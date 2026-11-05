@@ -3,11 +3,17 @@
 __pycache__/
 *.pyc
 .env
+*.before-sweet-crumbs
+.env.*
+!.env.example
+code/chunks.json
+code/module3_orders.json
+code/module3_extracted_orders.json
 # Private customer data
 code/chat_history.json
 code/errors.log
 code/orders.json
 code/agent_orders.json
-code/orders.json
 code/transcript.json
-code/errors.log
+code/transcript.txt
+code/orders.csv

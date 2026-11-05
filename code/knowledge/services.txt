@@ -1,0 +1,9 @@
+Sweet Crumbs - sample bakery menu
+
+Chocolate Cake: 1,500 PKR
+Cupcake: 250 PKR
+Brownie: 300 PKR
+Cookie: 200 PKR
+Custom Cake: 4,500 PKR
+
+Sample facts from business.json; confirm real quotations with the owner.

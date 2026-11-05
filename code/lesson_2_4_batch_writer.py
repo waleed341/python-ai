@@ -2,8 +2,8 @@
 """
 Lesson 2.4 - Batch Product Writer
 
-Generate one-sentence AI descriptions for business services.
-Skip services without a price and track tokens and time.
+Generate one-sentence AI descriptions for business products.
+Skip products without a price and track tokens and time.
 """
 
 import time
@@ -11,13 +11,13 @@ import time
 from langchain.chat_models import init_chat_model
 
 
-# WHY: Keep all service prices in one dictionary.
+# WHY: Keep all item prices in one dictionary.
 products = {
-    "Website Development": 30000,
-    "AI Chatbot": 20000,
-    "Business Automation": 15000,
-    "Landing Page": 10000,
-    "Old Service": 0,
+    "Chocolate Cake": 1500,
+    "Cupcake": 250,
+    "Brownie": 300,
+    "Cookie": 200,
+    "Mango Tart": 0,
 }
 
 # WHY: Create the model only once instead of loading it in every loop.
@@ -40,9 +40,9 @@ for name, price in products.items():
         continue
 
     prompt = (
-        "You are a marketing writer for a software company. "
+        "You are a marketing writer for a bakery. "
         f"Write exactly one short sentence describing {name}. "
-        f"The service costs {price} PKR. "
+        f"The item costs {price} PKR. "
         "Do not invent features or guarantees. "
         "Return only the description."
     )

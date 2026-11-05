@@ -2,10 +2,10 @@
 """
 Lesson 2.8 - Your First Agent
 
-Zentrox Lab AI Agent.
+Sweet Crumbs AI Agent.
 
 The agent can:
-1. Read business service prices.
+1. Read business item prices.
 2. Check order status.
 3. Place an order only after owner approval.
 4. Read business FAQ information.
@@ -37,11 +37,11 @@ MAX_STEPS = 5
 
 # WHY: Python owns the official prices so the AI cannot invent totals.
 PRICES = {
-    "website development": 30000,
-    "ai chatbot": 25000,
-    "business automation": 20000,
-    "ecommerce website": 50000,
-    "custom software": 80000,
+    "chocolate cake": 1500,
+    "cupcake": 250,
+    "brownie": 300,
+    "cookie": 200,
+    "custom cake": 4500,
 }
 
 # Demo orders for testing the status-check tool.
@@ -52,17 +52,24 @@ ORDER_STATUS = {
 }
 
 
+def normalize_item(item: str) -> str:
+    """Map ordinary bakery plurals to the official menu key."""
+    name = item.strip().lower()
+    return {"cupcakes":"cupcake", "brownies":"brownie", "cookies":"cookie",
+            "chocolate cakes":"chocolate cake", "custom cakes":"custom cake"}.get(name, name)
+
+
 @tool(parse_docstring=True)
 def get_price(item: str) -> str:
-    """Look up the official price of a Zentrox Lab service.
+    """Look up the official price of a Sweet Crumbs service.
 
     Args:
-        item: The service name to look up.
+        item: The item name to look up.
     """
-    name = item.strip().lower()
+    name = normalize_item(item)
 
     if name not in PRICES:
-        return f"'{item}' is not on the service menu."
+        return f"'{item}' is not on the bakery menu."
 
     return f"{name} costs {PRICES[name]:,} PKR"
 
@@ -84,14 +91,14 @@ def order_status(order_id: str) -> str:
 
 @tool(parse_docstring=True)
 def place_order(item: str, quantity: int, customer: str) -> str:
-    """Place a new service order after asking the owner for approval.
+    """Place a new bakery order after asking the owner for approval.
 
     Args:
-        item: The service the customer wants to order.
-        quantity: The number of service units requested.
+        item: The item the customer wants to order.
+        quantity: The number of bakery items requested.
         customer: The name of the customer placing the order.
     """
-    name = item.strip().lower()
+    name = normalize_item(item)
     customer = customer.strip()
 
     if name not in PRICES:
@@ -192,6 +199,7 @@ llm = ChatOllama(
     model="llama3.2",
     base_url="http://127.0.0.1:11434",
     temperature=0,
+    client_kwargs={"timeout": 60},
 )
 
 # WHY: bind_tools lets the AI request actions, but Python executes them.
@@ -199,10 +207,10 @@ agent = llm.bind_tools(TOOL_LIST)
 
 
 SYSTEM_PROMPT = """
-You are the Zentrox Lab AI business assistant.
+You are the Sweet Crumbs AI business assistant.
 
 You can use tools to:
-- Look up service prices.
+- Look up item prices.
 - Check existing order status.
 - Place service orders after owner approval.
 - Read business facts from FAQ.
@@ -211,7 +219,7 @@ Rules:
 1. Use get_price for price questions.
 2. Use order_status for order tracking.
 3. Use place_order when a customer requests a new order.
-4. Use read_faq for business hours, services, and policies.
+4. Use read_faq for business hours, products, and policies.
 5. Never invent prices or order statuses.
 6. Never claim an order was placed unless the tool confirms it.
 7. If the owner rejects an order, explain that it was cancelled.
@@ -240,6 +248,7 @@ def run_agent(question: str) -> str:
         if not response.tool_calls:
             return str(response.content)
 
+        action_result = None
         for tool_call in response.tool_calls:
             tool_name = tool_call["name"]
             tool_args = tool_call["args"]
@@ -250,6 +259,8 @@ def run_agent(question: str) -> str:
             if selected_tool is None:
                 result = f"Unknown tool: {tool_name}"
 
+            elif tool_name == "place_order" and action_result is not None:
+                result = "An order action was already handled this turn."
             else:
                 try:
                     result = selected_tool.invoke(tool_args)
@@ -271,6 +282,13 @@ def run_agent(question: str) -> str:
                     tool_call_id=tool_call_id,
                 )
             )
+            if tool_name == "place_order" and action_result is None:
+                action_result = str(result)
+
+        # WHY: Report the exact approval outcome so the model cannot claim a cancelled order was placed.
+        if action_result is not None:
+            history.append(AIMessage(content=action_result))
+            return action_result
 
     else:
         return (
@@ -280,7 +298,7 @@ def run_agent(question: str) -> str:
 
 
 print(
-    "Zentrox Lab Agent: ask about prices, orders, "
+    "Sweet Crumbs Agent: ask about prices, orders, "
     "or place an order. Type 'bye' to exit."
 )
 
